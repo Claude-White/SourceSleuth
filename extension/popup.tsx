@@ -1,28 +1,15 @@
-import "./styles.css"
-
-import { useState } from "react"
+// popup.tsx or content.tsx
+import React from "react";
+import GeminiChat from "./components/GeminiChat";
+// OR import AdvancedGeminiChat from "./components/AdvancedGeminiChat";
 
 function IndexPopup() {
-  const [data, setData] = useState("")
-
   return (
-    <div className="p-2">
-      <h2>
-        Welcome to your{" "}
-        <a
-          href="https://www.plasmo.com"
-          className="underline decoration-blue-500 text-blue-500 cursor-pointer"
-          target="_blank">
-          Plasmo
-        </a>{" "}
-        Extension!
-      </h2>
-      <input onChange={(e) => setData(e.target.value)} value={data} />
-      <a href="https://docs.plasmo.com" target="_blank">
-        View Docs
-      </a>
+    <div style={{ width: "400px", height: "500px", padding: "16px" }}>
+      <h1>Gemini AI Assistant</h1>
+      <GeminiChat />
     </div>
-  )
+  );
 }
 
-export default IndexPopup
+export default IndexPopup;
