@@ -1,3 +1,5 @@
+import "./styles.css"
+
 import { useEffect, useRef, useState, type FC } from "react"
 
 import myIcon from "~assets/logo.svg"
@@ -79,22 +81,10 @@ const Modal: FC<ModalProps> = ({ text, onClose }) => {
           Close
         </button>
       </div>
-      <div
-        style={{
-          padding: "1rem",
-          height: "18rem",
-          width: "24rem"
-        }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            gap: "0.25rem"
-          }}>
-          <img src={myIcon} style={{ width: "2rem" }} alt="My Icon" />
-          <h1 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
-            Source Sleuth
-          </h1>
+      <div className="p-4 h-72 w-96">
+        <div className="flex items-end gap-1">
+          <img src={myIcon} className="w-8" alt="My Icon" />
+          <h1 className="text-xl font-bold text-red-400">Source Sleuth</h1>
         </div>
         <h1>Received Data:</h1>
         <p>{text}</p>
