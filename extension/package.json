@@ -4,8 +4,34 @@
   "version": "0.0.1",
   "description": "A basic Plasmo extension.",
   "author": "Plasmo Corp. <foss@plasmo.com>",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content-script.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "type": "module"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "styles.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
   "permissions": [
-    "storage"
+    "storage",
+    "contextMenus",
+    "activeTab"
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*"
@@ -15,8 +41,14 @@
       "https://generativelanguage.googleapis.com/*"
     ],
     "permissions": [
-      "storage"
-    ]
+      "storage",
+      "contextMenus",
+      "activeTab"
+    ],
+    "background": {
+      "service_worker": "static/background/index.js",
+      "type": "module"
+    }
   },
   "scripts": {
     "dev": "plasmo dev",
@@ -25,6 +57,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
+    "@plasmohq/messaging": "^0.7.1",
     "@tailwindcss/cli": "^4.1.4",
     "plasmo": "0.90.3",
     "react": "18.2.0",
