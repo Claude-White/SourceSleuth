@@ -1,18 +1,18 @@
-import { useState } from "react"
-
 import "./styles.css"
+
+import { useState } from "react"
 
 function IndexPopup() {
   const [data, setData] = useState("")
 
   return (
-    <div
-      style={{
-        padding: 16
-      }}>
+    <div className="p-2">
       <h2>
         Welcome to your{" "}
-        <a href="https://www.plasmo.com" className="bg-red-500" target="_blank">
+        <a
+          href="https://www.plasmo.com"
+          className="underline decoration-blue-500 text-blue-500 cursor-pointer"
+          target="_blank">
           Plasmo
         </a>{" "}
         Extension!
