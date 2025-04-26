@@ -176,14 +176,32 @@ Your response:
       model: 'gemini-2.0-flash-001', 
     });
 
-    const result = await model.generateContent(augmentedPrompt);
+    const result = await model.generateContent({
+        contents: [
+          {
+            parts: [
+              {
+                text: augmentedPrompt
+              },
+                {
+                    text: `Please provide a rating of the accuracy of the information provided of ${prompt} on a scale of 1 to 100, where 1 is completely inaccurate and 100 is completely accurate and provide a brief explanation of your rating. Take into account the possible biases in the information provided and the potential for misinformation. If you are unable to provide a rating, please explain why.`,
+                }
+            ]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
+      });
     const response = await result.response;
     const text = response.text();
-    
-    return text;
+    const jsonData = JSON.parse(text);
+    return jsonData;
 
   } catch (error) {
-    return `Error: ${error.message}`;
+    const errorMessage = `Error generating response: ${error.message}`;
+    const jsonData = JSON.parse(errorMessage);
+    return jsonData;
   }
 }
 
