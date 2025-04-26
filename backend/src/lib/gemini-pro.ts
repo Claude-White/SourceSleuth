@@ -168,8 +168,13 @@ Here is current information from the web that might be relevant to help you prov
 ${webContext}
 
 Please use this information to provide an accurate and current response. Cite sources when appropriate.
-Your response:
-`;
+Please provide a rating of the accuracy of the information or statement provided of ${prompt} on a scale of 1 to 100, where 1 = inaccurate and harmful, and 100 = accurate and helpful. Provide a brief explanation of your rating. Take into account the possible biases in the information provided and the potential for misinformation. If you are unable to provide a rating, please explain why.
+
+Your response should be in JSON format with the following structure:
+summary: "Your summary here",
+rating: "Your rating here",
+explanation: "Your explanation here",
+sources: ["source1", "source2", ...]`;
 
     // Get response from Gemini
     const model = genAi.getGenerativeModel({ 
@@ -182,10 +187,7 @@ Your response:
             parts: [
               {
                 text: augmentedPrompt
-              },
-                {
-                    text: `Please provide a rating of the accuracy of the information provided of ${prompt} on a scale of 1 to 100, where 1 is completely inaccurate and 100 is completely accurate and provide a brief explanation of your rating. Take into account the possible biases in the information provided and the potential for misinformation. If you are unable to provide a rating, please explain why.`,
-                }
+              }
             ]
           }
         ],
