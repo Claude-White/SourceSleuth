@@ -10,7 +10,24 @@ const userSchema = new mongoose.Schema(
                         required: true,
                     },
                     feedback: {
-                        type: String,
+                        type: {
+                            summary: {
+                                type: String,
+                                required: true,
+                            },
+                            rating: {
+                                type: Number,
+                                required: true,
+                            },
+                            explanation: {
+                                type: String,
+                                required: true,
+                            },
+                            sources: {
+                                type: [String],
+                                required: true,
+                            },
+                        },
                         required: true,
                     },
                     url: {

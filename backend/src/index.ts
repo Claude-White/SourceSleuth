@@ -39,7 +39,6 @@ app.post("/users", async (c) => {
 app.post("/gemini", async (c) => {
     try {
         const body = await c.req.json();
-        console.log("Received body:", body);
         const responding = await getGeminiResponse(body.prompt);
         return c.json(responding, 200);
     } catch (error) {
@@ -87,7 +86,7 @@ app.patch("/users/:id/claims", async (c) => {
 serve(
     {
         fetch: app.fetch,
-        port: Number(process.env.PORT || 3000)
+        port: Number(process.env.PORT || 3000),
     },
     (info) => {
         console.log(`Server is running on http://localhost:${info.port}`);

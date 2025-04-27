@@ -16,28 +16,45 @@ export const ClaimDetails: React.FC<{
     <div className="w-full max-w-2xl overflow-hidden border shadow-xl bg-base-200 rounded-2xl border-base-100">
       <div className="p-8">
         <div className="mb-6">
-          <h2 className="pb-1 mb-3 text-xl font-semibold border-b border-accent/30 text-info">
+          <h2 className="pb-1 mb-3 text-xl font-semibold border-b border-accent/30">
             Claim
           </h2>
-          <p className="text-lg leading-relaxed">{claim.text}</p>
+          <p className="text-base leading-relaxed">{claim.text}</p>
         </div>
 
         <div className="pt-6 mb-6 border-t border-base-100">
-          <h2 className="pb-1 mb-3 text-xl font-semibold border-b border-accent/30 text-info">
+          <h2 className="pb-1 mb-3 text-xl font-semibold border-b border-accent/30">
             Feedback
           </h2>
-          <p className="text-lg leading-relaxed">{claim.feedback}</p>
+          <h3 className="pb-1 text-lg text-info">Rating</h3>
+          <p className="text-base leading-relaxed">{claim.feedback.rating}</p>
+          <h3 className="pb-1 text-lg text-info">Summary</h3>
+          <p className="text-base leading-relaxed">{claim.feedback.summary}</p>
+          <h3 className="pb-1 text-lg text-info">Explanation</h3>
+          <p className="text-base leading-relaxed">
+            {claim.feedback.explanation}
+          </p>
+          <h3 className="pb-1 text-lg text-info">Sources</h3>
+          {claim.feedback.sources.map((source) => (
+            <a
+              href={source}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-base text-blue-500 break-words truncate transition-colors duration-200 hover:text-blue-400">
+              {source}
+            </a>
+          ))}
         </div>
 
         <div className="pt-6 border-t border-base-100">
-          <h2 className="pb-1 mb-3 text-xl font-semibold border-b border-accent/30 text-info">
+          <h2 className="pb-1 mb-3 text-xl font-semibold border-b border-accent/30">
             Source
           </h2>
           <a
             href={claim.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-lg text-blue-500 underline break-words transition-colors duration-200 hover:text-blue-400">
+            className="text-base text-blue-500 underline break-words transition-colors duration-200 hover:text-blue-400">
             {claim.url}
           </a>
         </div>

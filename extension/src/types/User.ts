@@ -1,6 +1,6 @@
 export interface Claim {
   text: string
-  feedback: string
+  feedback: SummaryObject
   url: string
 }
 
@@ -9,4 +9,11 @@ export interface User {
   claims: Claim[]
   createdAt?: Date
   updatedAt?: Date
+}
+
+export type SummaryObject = {
+  summary: string
+  rating: number
+  explanation: string
+  sources: string[]
 }
