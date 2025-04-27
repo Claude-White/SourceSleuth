@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import "dotenv/config";
 
 let cachedConnection: typeof mongoose | null = null;
 
@@ -8,9 +9,7 @@ export async function connectToDatabase() {
     }
 
     try {
-        const connection = await mongoose.connect(
-            "mongodb+srv://SourceSleuth:Source-Sleuth-Jachacks817@sourcesleuth.jd3u7p3.mongodb.net/SourceSleuth"
-        );
+        const connection = await mongoose.connect(process.env.MONGODB_URL!);
 
         cachedConnection = connection;
         console.log("Connected to MongoDB");

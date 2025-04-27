@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { connectToDatabase } from "./lib/mongodb.js";
 import { User } from "./models/User.js";
+import "dotenv/config";
 
 const app = new Hono();
 
@@ -75,7 +76,7 @@ app.patch("/users/:id/claims", async (c) => {
 serve(
     {
         fetch: app.fetch,
-        port: 3000,
+        port: Number(process.env.PORT!),
     },
     (info) => {
         console.log(`Server is running on http://localhost:${info.port}`);
