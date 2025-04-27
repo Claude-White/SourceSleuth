@@ -1,93 +1,88 @@
 import "./styles.css"
 
-import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react"
 
-import myIcon from "~assets/logo.svg"
+import { Storage } from "@plasmohq/storage"
+
+import Logo from "~assets/logo.svg"
+
+import { ClaimDetails } from "./ClaimDetails"
+import { ClaimList } from "./ClaimList"
+import type { User } from "./types/User"
 
 function IndexPopup() {
-  enum Status {
-    UNHIGHLIGHTED = "Highlight Any Information",
-    HIGHLIGHTED = "Selected Text",
-    COMPLETED = "Results",
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const storage = new Storage()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        let userId = (await storage.get("userId")) ?? null
+        if (userId == null) {
+          const response = await fetch("http://localhost:3000/users", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ claims: [] })
+          })
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          const data: User = await response.json()
+          if (data._id == null) {
+            throw new Error(`No user id`)
+          }
+          await storage.set("userId", data._id)
+          userId = data._id
+        }
+        const response = await fetch(`http://localhost:3000/users/${userId}`)
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`)
+        }
+        const data: User = await response.json()
+        setUser(data)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [])
+
+  function renderContent() {
+    if (loading) return <div>Loading...</div>
+    if (error) return <div>Error: {error}</div>
+    if (!user) return <div>No history found.</div>
+    if (user.claims.length == 0) return <div>History empty.</div>
+    return <ClaimList claims={user.claims} onSelect={setSelectedIdx} />
   }
 
-  const [submitted, setIsSubmitted] = useState(false);
-  const [highlightedText, setHighlightedText] = useState("");
-  const [status, setStatus] = useState(Status.UNHIGHLIGHTED);
-  const [response, setResponse] = useState(null);
-  const [title, setTitle] = useState("");
-
-  useEffect(() => {
-    // fetch to get the with the highlighted text as payload
-  }, [submitted]);
-
-  useEffect(() => {
-    if (response) setStatus(Status.COMPLETED)
-  }, [response])
-
-  useEffect(() => {
-    if (status === Status.UNHIGHLIGHTED) {
-      setTitle("Highlight Any Information");
-    } else if (status === Status.HIGHLIGHTED) {
-      setTitle("Selected Text");
-    } else if (status === Status.COMPLETED) {
-      setTitle("Results");
-    }
-  }, [status]);
-  
-
   return (
-    <div className="bg-[#474747] p-4 h-72 w-96 flex flex-col justify-between">
-      <div className="flex items-end gap-1">
-        <img src={myIcon} className="w-8" alt="My Icon" />
-        <h1 className="text-2xl font-bold">Source Sleuth</h1>
-      </div>
-      <div>
-        <h2 className="text-lg font-bold">{title}</h2>
-        {highlightedText ? (
-          <p className="text-base text-gray-400">{highlightedText}</p>
-        ) : (
-          <p className="text-base text-gray-400">
-            Simply highlight any text on a website you suspect of being false,
-            inaccurate or biased, and click the button below to determine the
-            legitimacy.
-          </p>
-        )}
-      </div>
-
-      <button
-        onClick={() => {
-          setIsSubmitted(true);
-        }}
-        className="w-full rounded-lg btn btn-primary shadow-none bg-[#D9D9D9] border-none text-black font-normal p-6"
-        disabled={!highlightedText || submitted}
-      >
-        <span className="flex items-center justify-center gap-2">
-          {submitted ? (
-            <span className="loading loading-spinner loading-sm"></span>
-          ) : (
-            <Search strokeWidth={2} width={20} height={20} />
-          )}
-          {submitted ? "Investigating" : "Check Now"}
-        </span>
-      </button>
-    </div>
-  );
-  const [data, setData] = useState("")
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    setData(params.get("data") || "")
-  }, [])
-  return (
-    <div className="p-4 h-72 w-96">
-      <div className="flex items-end gap-1">
-        <img src={myIcon} className="w-8" alt="My Icon" />
-        <h1 className="text-xl font-bold">Source Sleuth</h1>
-      </div>
-      <h1>Received Data:</h1>
-      <p>{data}</p>
+    <div className="p-4 overflow-y-auto w-96 h-96">
+      {selectedIdx === null ? (
+        <>
+          <div className="flex items-end justify-between gap-1 mb-3">
+            <h1 className="text-3xl font-bold">Source Sleuth</h1>
+            <img className="w-12" src={Logo} alt="Logo" />
+          </div>
+          <h2 className="mb-1 text-xl font-semibold">Search History</h2>
+          {renderContent()}
+        </>
+      ) : (
+        <ClaimDetails
+          claim={user.claims[selectedIdx]}
+          onBack={() => setSelectedIdx(null)}
+        />
+      )}
     </div>
   )
 }

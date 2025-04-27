@@ -2,7 +2,6 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { connectToDatabase } from "./lib/mongodb.js";
 import { User } from "./models/User.js";
-import getGeminiResponse from "./lib/gemini-pro.js";
 
 const app = new Hono();
 
@@ -15,15 +14,15 @@ app.use(async (c, next) => {
     }
 });
 
-app.get("/users", async (c) => {
+app.get("/users/:id", async (c) => {
     try {
-        const users = await User.find({});
-        return c.json(users);
+        const { id } = c.req.param();
+        const user = (await User.find({ _id: id }))[0];
+        return c.json(user);
     } catch (error) {
         return c.json({ error: "Failed to fetch users" }, 500);
     }
 });
-
 
 app.post("/users", async (c) => {
     try {
@@ -36,14 +35,40 @@ app.post("/users", async (c) => {
     }
 });
 
-app.post("/gemini", async (c) => {
+app.patch("/users/:id/claims", async (c) => {
     try {
-        const body = await c.req.json();
-        console.log("Received body:", body);
-        const responding = await getGeminiResponse(body.prompt);
-        return c.json(responding, 200);
+        const { id } = c.req.param();
+        const claims = await c.req.json();
+
+        if (!Array.isArray(claims) || claims.length === 0) {
+            return c.json(
+                { error: "Request body must be a non-empty array of claims" },
+                400
+            );
+        }
+
+        for (const claim of claims) {
+            if (!claim.text || !claim.feedback || !claim.url) {
+                return c.json(
+                    { error: "Each claim must have text, feedback, and url" },
+                    400
+                );
+            }
+        }
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { $push: { claims: { $each: claims } } },
+            { new: true }
+        );
+
+        if (!user) {
+            return c.json({ error: "User not found" }, 404);
+        }
+
+        return c.json(user);
     } catch (error) {
-        return c.json({ error: "Failed to create user" }, 500);
+        return c.json({ error: "Failed to add claims" }, 500);
     }
 });
 

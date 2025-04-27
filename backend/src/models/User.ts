@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema(
                         type: String,
                         required: true,
                     },
+                    url: {
+                        type: String,
+                        required: true,
+                    },
                 },
             ],
             required: true,
