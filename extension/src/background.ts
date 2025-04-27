@@ -1,3 +1,8 @@
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'HIGHLIGHTED_TEXT') {
+      chrome.storage.local.set({ highlightedText: message.text });
+    }
+  });
 // chrome.runtime.onInstalled.addListener(() => {
 //   chrome.contextMenus.create({
 //     id: "myContextMenuId",

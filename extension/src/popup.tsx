@@ -1,14 +1,16 @@
-import "./styles.css"
+import "./styles.css";
 
 import { useEffect, useState } from "react"
 
-import { Storage } from "@plasmohq/storage"
+import { Storage } from "@plasmohq/storage";
+import { Search } from "lucide-react";
 
 import Logo from "~assets/logo.svg"
 
 import { ClaimDetails } from "./ClaimDetails"
 import { ClaimList } from "./ClaimList"
 import type { User } from "./types/User"
+import myIcon from "~assets/logo.svg";
 
 function IndexPopup() {
   const apiBaseUrl = process.env.PLASMO_PUBLIC_API_BASE_URL
@@ -23,6 +25,102 @@ function IndexPopup() {
   const storage = new Storage()
 
   useEffect(() => {
+    chrome.storage.local.get("highlightedText", (result) => {
+      if (result.highlightedText) {
+        setHighlightedText(result.highlightedText);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    // On popup open, get the last highlighted text
+    chrome.storage.local.get("highlightedText", (result) => {
+      if (result.highlightedText) {
+        setHighlightedText(result.highlightedText);
+      }
+    });
+
+    // Listen for new highlights while popup is open
+    const handler = (message) => {
+      if (message.type === "HIGHLIGHTED_TEXT") {
+        setHighlightedText(message.text);
+      }
+    };
+    chrome.runtime.onMessage.addListener(handler);
+    return () => chrome.runtime.onMessage.removeListener(handler);
+  }, []);
+
+  useEffect(() => {
+    if (response) setStatus(Status.COMPLETED);
+  }, [response]);
+
+  useEffect(() => {
+    if (highlightedText) setStatus(Status.HIGHLIGHTED);
+    else setStatus(Status.UNHIGHLIGHTED);
+  }, [highlightedText]);
+
+  useEffect(() => {
+    if (status === Status.UNHIGHLIGHTED) {
+      setTitle("Highlight Any Information");
+    } else if (status === Status.HIGHLIGHTED) {
+      setTitle("Selected Text");
+    } else if (status === Status.COMPLETED) {
+      setTitle("Results");
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const handler = (message) => {
+      if (message.type === "HIGHLIGHTED_TEXT") {
+        setHighlightedText(message.text);
+      }
+    };
+    chrome.runtime.onMessage.addListener(handler);
+    return () => chrome.runtime.onMessage.removeListener(handler);
+  }, []);
+
+  return (
+    <div className="bg-[#474747] p-4 h-72 w-96 flex flex-col justify-between">
+      <div className="flex items-end gap-1">
+        <img src={myIcon} className="w-8" alt="My Icon" />
+        <h1 className="text-2xl font-bold">Source Sleuth</h1>
+      </div>
+      <div>
+        <h2 className="text-lg font-bold">{title}</h2>
+        {highlightedText ? (
+          <p className="text-base text-gray-400 italic h-24 overflow-hidden line-clamp-3">
+            {`\"${highlightedText}\"`}
+          </p>
+        ) : (
+          <p className="text-base text-gray-400 h-24 overflow-hidden line-clamp-3">
+            Simply highlight any text on a website you suspect of being false,
+            inaccurate or biased, and click the button below to determine the legitimacy.
+          </p>
+        )}
+      </div>
+
+      <button
+        onClick={() => {
+          setIsSubmitted(true);
+        }}
+        className="w-full rounded-lg btn btn-primary shadow-none bg-[#D9D9D9] border-none text-black font-normal p-6"
+        disabled={!highlightedText || submitted}
+      >
+        <span className="flex items-center justify-center gap-2">
+          {submitted ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            <Search strokeWidth={2} width={20} height={20} />
+          )}
+          {submitted ? "Investigating" : "Check Now"}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+export default IndexPopup;
+
     const fetchUser = async () => {
       setLoading(true)
       setError(null)
