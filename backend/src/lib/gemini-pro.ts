@@ -347,7 +347,9 @@ Provide a concise but comprehensive summary of the information found. Include im
         const ratingPrompt = `
 Based on the following summary about "${prompt}" extracted from web search results:
 
-${summary}
+${summary} which represents the most current information available.
+
+The current date is ${new Date().toISOString().split("T")[0]}. Expect the information to be accurate as of this date.
 
 Please provide a rating of the accuracy of the information or statement provided by "${prompt}" on a scale of 1 to 100, where 1 = inaccurate and harmful, and 100 = accurate and helpful. 
 
