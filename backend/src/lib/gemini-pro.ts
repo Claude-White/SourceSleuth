@@ -45,7 +45,7 @@ const proModel = genAi.getGenerativeModel({
 
 // Function to perform Google search with cached results
 const searchCache = new Map<string, any[]>();
-async function searchGoogle(query: string, numResults: number = 5): Promise<any[]> {
+async function searchGoogle(query: string, numResults: number = 10): Promise<any[]> {
     // Use cached results if available
     const cacheKey = `${query}:${numResults}`;
     if (searchCache.has(cacheKey)) {
@@ -214,19 +214,52 @@ async function getWebContext(query: string): Promise<string> {
     try {
         console.log(`Searching for information about: ${query}`);
 
-        const searchResults = await searchGoogle(query);
+        const searchResults = await searchGoogle(query, 10); // Get 5 results to have fallbacks
         if (!searchResults.length) {
             return "No search results found.";
         }
 
         console.log(`Found ${searchResults.length} search results`);
 
-        // Fetch pages in parallel for better efficiency
-        const pagesToFetch = searchResults.slice(0, 3); // Limit to top 3 results
-        const fetchPromises = pagesToFetch.map((result) =>
-            fetchWebPage(result.link)
-        );
-        const webPages = await Promise.all(fetchPromises);
+        // Try to fetch the top 5 results with better error handling
+        const webPages: WebPage[] = [];
+        let fetchedCount = 0;
+        let processedCount = 0;
+        
+        // Process search results one by one until we have 3 valid results or run out of results
+        while (fetchedCount < 5 && processedCount < searchResults.length) {
+            try {
+                const result = searchResults[processedCount];
+                processedCount++;
+                
+                // Check if the URL is likely to be readable content (skip PDFs, images, etc.)
+                const url = result.link;
+                if (!isLikelyReadableUrl(url)) {
+                    console.log(`Skipping likely unreadable URL: ${url}`);
+                    continue;
+                }
+                
+                const page = await fetchWebPage(url);
+                
+                // Skip pages with minimal content
+                if (page.content.length < 100) {
+                    console.log(`Skipping page with minimal content: ${url}`);
+                    continue;
+                }
+                
+                webPages.push(page);
+                fetchedCount++;
+                
+            } catch (error) {
+                console.error(`Error processing result ${processedCount}:`, error);
+                // Continue to the next result on error
+            }
+        }
+
+        // If we couldn't get any valid pages, return a message
+        if (webPages.length === 0) {
+            return "Could not retrieve readable content from search results.";
+        }
 
         // Format web context more efficiently
         const webPageTexts = webPages.map(
@@ -245,6 +278,36 @@ async function getWebContext(query: string): Promise<string> {
         // @ts-ignore
         return `Error retrieving web information: ${error.message}`;
     }
+}
+
+// Helper function to check if a URL is likely to be readable text content
+function isLikelyReadableUrl(url: string): boolean {
+    // Skip URLs that point to PDFs, images, or other non-HTML content
+    const nonReadableExtensions = [
+        '.pdf', '.jpg', '.jpeg', '.png', '.gif', '.svg', 
+        '.mp4', '.mp3', '.avi', '.mov', '.doc', '.docx', 
+        '.xls', '.xlsx', '.ppt', '.pptx', '.zip', '.rar'
+    ];
+    
+    const lowercaseUrl = url.toLowerCase();
+    
+    // Check for file extensions in the URL
+    if (nonReadableExtensions.some(ext => lowercaseUrl.endsWith(ext))) {
+        return false;
+    }
+    
+    // Additional checks for URLs that might be problematic
+    const skipPatterns = [
+        '/download/', '/image/', '/video/', 
+        '/pdf/', '/document/', '/file/',
+        'login', 'signin', 'account'
+    ];
+    
+    if (skipPatterns.some(pattern => lowercaseUrl.includes(pattern))) {
+        return false;
+    }
+    
+    return true;
 }
 
 // Main function to get Gemini response with web search augmentation
