@@ -169,7 +169,7 @@ ${webContext}
 
 Please use this information to provide an accurate and current response. Cite sources when appropriate.
 Please provide a rating of the accuracy of the information or statement provided of ${prompt} on a scale of 1 to 100, where 1 = inaccurate and harmful, and 100 = accurate and helpful. Provide a brief explanation of your rating. Take into account the possible biases in the information provided and the potential for misinformation. If you are unable to provide a rating, please explain why.
-
+The sources you return should ONLY be trusted articles that are relevant to the query. Sources like Snopes, Reuters, etc. are great examples of good sources.
 Your response should be in JSON format with the following structure:
 summary: "Your summary here",
 rating: "Your rating here",
