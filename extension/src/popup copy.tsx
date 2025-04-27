@@ -1,6 +1,6 @@
 import "./styles.css";
 
-import { Search } from "lucide-react";
+import { Search, History, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Storage } from "@plasmohq/storage";
@@ -202,31 +202,10 @@ function IndexPopup() {
   }, [viewMode]);
 
   function renderHistory() {
-    if (loading)
-      return (
-        <div className="flex items-center justify-center h-32 text-blue-300">
-          <span className="mr-2 loading loading-spinner loading-md"></span>
-          Loading...
-        </div>
-      );
-    if (error)
-      return (
-        <div className="flex items-center justify-center h-32 text-red-400">
-          Error: {error}
-        </div>
-      );
-    if (!user)
-      return (
-        <div className="flex items-center justify-center h-32 text-gray-400">
-          No history found.
-        </div>
-      );
-    if (user.claims.length === 0)
-      return (
-        <div className="flex items-center justify-center h-32 text-gray-400">
-          History empty.
-        </div>
-      );
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    if (!user) return <div>No history found.</div>;
+    if (user.claims.length == 0) return <div>History empty.</div>;
     if (selectedIdx !== null) {
       return (
         <ClaimDetails
@@ -235,22 +214,27 @@ function IndexPopup() {
         />
       );
     }
-    return <ClaimList claims={user.claims} onSelect={setSelectedIdx} />;
+    return (
+      <div>
+        <h2 className="text-lg font-bold">History</h2>
+        <ClaimList claims={user.claims} onSelect={setSelectedIdx} />{" "}
+      </div>
+    );
   }
 
   function renderInputView() {
     return (
-      <div className="flex flex-col justify-between">
-        <div className="rounded-xl shadow-inner flex flex-col justify-between">
-          <h2 className="text-lg font-semibold text-blue-200">{title}</h2>
+      <>
+        <div>
+          <h2 className="text-lg font-bold">{title}</h2>
           {status === Status.COMPLETED && response ? (
             renderResultView()
           ) : highlightedText ? (
-            <p className="h-24 overflow-hidden text-base italic text-gray-300 line-clamp-3 rounded">
+            <p className="h-24 overflow-hidden text-base italic text-gray-400 line-clamp-3">
               {`"${highlightedText}"`}
             </p>
           ) : (
-            <p className="h-28 overflow-hidden text-base text-gray-400 line-clamp-3 rounded overflow-y-scroll">
+            <p className="h-24 overflow-hidden text-base text-gray-400 line-clamp-3">
               Simply highlight any text on a website you suspect of being false,
               inaccurate or biased, and click the button below to determine the
               legitimacy.
@@ -261,7 +245,7 @@ function IndexPopup() {
         {status !== Status.COMPLETED && (
           <button
             onClick={handleCheckNow}
-            className="w-full py-3 font-semibold text-white transition bg-blue-500 rounded-lg shadow hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full rounded-lg btn btn-primary shadow-none bg-[#D9D9D9] border-none text-black font-normal p-6"
             disabled={!highlightedText || submitted}
           >
             <span className="flex items-center justify-center gap-2">
@@ -281,7 +265,7 @@ function IndexPopup() {
               setResponse(null);
               setStatus(Status.HIGHLIGHTED);
             }}
-            className="w-full py-3 mt-2 font-semibold text-white transition bg-gray-700 rounded-lg shadow hover:bg-gray-600"
+            className="w-full rounded-lg btn btn-primary shadow-none bg-[#D9D9D9] border-none text-black font-normal p-6 mt-2"
           >
             <span className="flex items-center justify-center gap-2">
               <Search strokeWidth={2} width={20} height={20} />
@@ -289,7 +273,7 @@ function IndexPopup() {
             </span>
           </button>
         )}
-      </div>
+      </>
     );
   }
 
@@ -297,32 +281,26 @@ function IndexPopup() {
     if (!response) return null;
 
     return (
-      <div className="mt-2 overflow-y-auto max-h-40 bg-[#23272f] rounded-lg p-3">
+      <div className="mt-2 overflow-y-auto max-h-40">
         <div className="mb-2">
-          <span className="font-bold text-gray-200">Accuracy Rating: </span>
+          <span className="font-bold">Accuracy Rating: </span>
           <span
-            className={
-              Number(response.rating) > 70
-                ? "text-green-400 font-bold"
-                : Number(response.rating) > 40
-                  ? "text-yellow-400 font-bold"
-                  : "text-red-400 font-bold"
-            }
+            className={`${Number(response.rating) > 70 ? "text-green-500" : Number(response.rating) > 40 ? "text-yellow-500" : "text-red-500"}`}
           >
             {response.rating}/100
           </span>
         </div>
         <p className="mb-2 text-sm">
-          <span className="font-bold text-gray-200">Summary: </span>
-          <span className="text-gray-100">{response.summary}</span>
+          <span className="font-bold">Summary: </span>
+          {response.summary}
         </p>
         <p className="text-sm">
-          <span className="font-bold text-gray-200">Explanation: </span>
-          <span className="text-gray-100">{response.explanation}</span>
+          <span className="font-bold">Explanation: </span>
+          {response.explanation}
         </p>
         {response.sources && response.sources.length > 0 && (
           <div className="mt-2">
-            <p className="text-sm font-bold text-gray-200">Sources:</p>
+            <p className="text-sm font-bold">Sources:</p>
             <ul className="pl-5 text-xs list-disc">
               {response.sources.map((source: string, index: number) => (
                 <li key={index} className="truncate">
@@ -330,7 +308,7 @@ function IndexPopup() {
                     href={source}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 break-all hover:underline"
+                    className="text-blue-500 hover:underline"
                   >
                     {source}
                   </a>
@@ -354,26 +332,11 @@ function IndexPopup() {
   const toggleButton = (
     <button
       onClick={() => setViewMode(viewMode === "input" ? "history" : "input")}
-      className="px-4 py-1 text-sm font-medium text-white transition bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      className="px-3 py-1 text-sm text-gray-400 flex items-center gap-1 focus:outline-none"
     >
+      <History width={20} height={20}/>
       {viewMode === "input" ? "History" : "Back"}
     </button>
-  );
-
-  const header = (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3">
-        <img
-          src={myIcon}
-          className="rounded-lg shadow w-9 h-9"
-          alt="Source Sleuth Icon"
-        />
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Source Sleuth
-        </h1>
-      </div>
-      {toggleButton}
-    </div>
   );
 
   if (
@@ -382,19 +345,31 @@ function IndexPopup() {
     status === Status.COMPLETED
   ) {
     return (
-      <div className="bg-[#23272f] min-h-[22rem] w-[26rem] p-5 rounded-2xl shadow-2xl flex flex-col">
-        {header}
-        <div className="flex flex-col flex-1 gap-4">{renderContent()}</div>
+      <div
+        className={`h-auto min-h-72 w-96 flex flex-col ${
+          viewMode === "input" ? "justify-between" : "justify-start"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-end gap-1">
+            <img src={myIcon} className="w-8" alt="My Icon" />
+            <h1 className="text-2xl font-bold">Source Sleuth</h1>
+          </div>
+
+          <div className="flex items-center gap-2">{toggleButton}</div>
+        </div>
+        {renderContent()}
       </div>
     );
   } else {
     return (
-      <div className="h-72 w-96 flex flex-col justify-between">
+      <div className="h-auto min-h-72 w-96 flex flex-col justify-between">
         <div className="flex items-center justify-between gap-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-1">
             <img src={myIcon} className="w-8" alt="My Icon" />
             <h1 className="text-2xl font-bold">Source Sleuth</h1>
           </div>
+
           <div className="flex items-center gap-2">{toggleButton}</div>
         </div>
         {renderContent()}
