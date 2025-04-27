@@ -11,6 +11,8 @@ import { ClaimList } from "./ClaimList"
 import type { User } from "./types/User"
 
 function IndexPopup() {
+  const apiBaseUrl = process.env.PLASMO_PUBLIC_API_BASE_URL
+
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,7 +29,7 @@ function IndexPopup() {
       try {
         let userId = (await storage.get("userId")) ?? null
         if (userId == null) {
-          const response = await fetch("http://localhost:3000/users", {
+          const response = await fetch(`${apiBaseUrl}/users`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
@@ -44,7 +46,7 @@ function IndexPopup() {
           await storage.set("userId", data._id)
           userId = data._id
         }
-        const response = await fetch(`http://localhost:3000/users/${userId}`)
+        const response = await fetch(`${apiBaseUrl}/users/${userId}`)
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`)
         }
