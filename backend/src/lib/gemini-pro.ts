@@ -3,6 +3,20 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import fetch from "node-fetch";
 import { load } from "cheerio";
 
+// Define types for our responses
+interface GeminiResponse {
+  summary: string;
+  rating: string;
+  explanation: string;
+  sources: string[];
+}
+
+interface WebPage {
+  title: string;
+  content: string;
+  url: string;
+}
+
 // Get API keys from environment variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY;
@@ -30,11 +44,12 @@ const proModel = genAi.getGenerativeModel({
 });
 
 // Function to perform Google search with cached results
-const searchCache = new Map();
-async function searchGoogle(query: string, numResults: number = 5) {
+const searchCache = new Map<string, any[]>();
+async function searchGoogle(query: string, numResults: number = 5): Promise<any[]> {
     // Use cached results if available
     const cacheKey = `${query}:${numResults}`;
     if (searchCache.has(cacheKey)) {
+        // @ts-ignore
         return searchCache.get(cacheKey);
     }
 
@@ -62,12 +77,13 @@ async function searchGoogle(query: string, numResults: number = 5) {
 }
 
 // Create a cache for web page content
-const pageCache = new Map();
+const pageCache = new Map<string, WebPage>();
 
 // Function to fetch and extract content from a webpage with improved efficiency
-async function fetchWebPage(url: string) {
+async function fetchWebPage(url: string): Promise<WebPage> {
     // Use cached page if available
     if (pageCache.has(url)) {
+        // @ts-ignore
         return pageCache.get(url);
     }
 
@@ -194,7 +210,7 @@ async function fetchWebPage(url: string) {
 }
 
 // Function to get web context for a query
-async function getWebContext(query: string) {
+async function getWebContext(query: string): Promise<string> {
     try {
         console.log(`Searching for information about: ${query}`);
 
@@ -207,7 +223,6 @@ async function getWebContext(query: string) {
 
         // Fetch pages in parallel for better efficiency
         const pagesToFetch = searchResults.slice(0, 3); // Limit to top 3 results
-        // @ts-ignore
         const fetchPromises = pagesToFetch.map((result) =>
             fetchWebPage(result.link)
         );
@@ -215,8 +230,7 @@ async function getWebContext(query: string) {
 
         // Format web context more efficiently
         const webPageTexts = webPages.map(
-            // @ts-ignore
-            (page, index) =>
+            (page: WebPage, index: number) =>
                 `[Source ${index + 1}: ${page.title}] (${page.url})\n${
                     page.content
                 }`
@@ -234,7 +248,7 @@ async function getWebContext(query: string) {
 }
 
 // Main function to get Gemini response with web search augmentation
-export default async function getGeminiResponseWithWebSearch(prompt: string) {
+export default async function getGeminiResponse(prompt: string): Promise<GeminiResponse> {
     try {
         // Get web context
         const webContext = await getWebContext(prompt);
@@ -248,8 +262,7 @@ ${webContext}
 
 Provide a concise but comprehensive summary of the information found. Include important facts, key points, and cite sources when appropriate.
 `;
-
-        // @ts-ignore
+// @ts-ignore
         const summaryResult = await flashModel.generateContent({
             contents: [{ parts: [{ text: summarizationPrompt }] }],
         });
@@ -283,7 +296,7 @@ Your response should be in JSON format with the following structure only:
   "explanation": "Your explanation here"
 }`;
 
-        // @ts-ignore
+// @ts-ignore
         const ratingResult = await proModel.generateContent({
             contents: [{ parts: [{ text: ratingPrompt }] }],
             generationConfig: {
@@ -297,11 +310,10 @@ Your response should be in JSON format with the following structure only:
 
         try {
             ratingData = JSON.parse(ratingText);
-        } catch (jsonError) {
+        } catch (jsonError: any) {
             console.error("Error parsing rating JSON response:", jsonError);
             ratingData = {
                 rating: "N/A",
-                // @ts-ignore
                 explanation: `Error parsing rating response: ${jsonError.message}`,
             };
         }
@@ -313,12 +325,11 @@ Your response should be in JSON format with the following structure only:
             explanation: ratingData.explanation,
             sources: sources,
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating response:", error);
         return {
             summary: "Error generating response",
             rating: "N/A",
-            // @ts-ignore
             explanation: `Error: ${error.message}`,
             sources: [],
         };
@@ -329,7 +340,7 @@ Your response should be in JSON format with the following structure only:
 }
 
 // Helper function to manage cache sizes and prevent memory leaks
-function _manageMemoryCaches() {
+function _manageMemoryCaches(): void {
     const MAX_CACHE_SIZE = 100; // Maximum entries in each cache
 
     // Trim search cache if too large
