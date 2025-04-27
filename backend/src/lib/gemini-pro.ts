@@ -31,7 +31,7 @@ const proModel = genAi.getGenerativeModel({
 
 // Function to perform Google search with cached results
 const searchCache = new Map();
-async function searchGoogle(query, numResults = 5) {
+async function searchGoogle(query: string, numResults: number = 5) {
     // Use cached results if available
     const cacheKey = `${query}:${numResults}`;
     if (searchCache.has(cacheKey)) {
@@ -49,6 +49,7 @@ async function searchGoogle(query, numResults = 5) {
         }
 
         const data = await response.json();
+        // @ts-ignore
         const results = data.items || [];
 
         // Cache results
@@ -64,7 +65,7 @@ async function searchGoogle(query, numResults = 5) {
 const pageCache = new Map();
 
 // Function to fetch and extract content from a webpage with improved efficiency
-async function fetchWebPage(url) {
+async function fetchWebPage(url: string) {
     // Use cached page if available
     if (pageCache.has(url)) {
         return pageCache.get(url);
@@ -84,6 +85,7 @@ async function fetchWebPage(url) {
                 "Accept-Language": "en-US,en;q=0.9",
                 "Cache-Control": "max-age=0",
             },
+            // @ts-ignore
             timeout: 3500, // Additional timeout safeguard
         });
 
@@ -94,6 +96,7 @@ async function fetchWebPage(url) {
         }
 
         const html = await response.text();
+        // @ts-ignore
         const $ = load(html, { decodeEntities: true });
 
         // Extract page title
@@ -191,7 +194,7 @@ async function fetchWebPage(url) {
 }
 
 // Function to get web context for a query
-async function getWebContext(query) {
+async function getWebContext(query: string) {
     try {
         console.log(`Searching for information about: ${query}`);
 
@@ -204,6 +207,7 @@ async function getWebContext(query) {
 
         // Fetch pages in parallel for better efficiency
         const pagesToFetch = searchResults.slice(0, 3); // Limit to top 3 results
+        // @ts-ignore
         const fetchPromises = pagesToFetch.map((result) =>
             fetchWebPage(result.link)
         );
@@ -211,6 +215,7 @@ async function getWebContext(query) {
 
         // Format web context more efficiently
         const webPageTexts = webPages.map(
+            // @ts-ignore
             (page, index) =>
                 `[Source ${index + 1}: ${page.title}] (${page.url})\n${
                     page.content
@@ -223,12 +228,13 @@ async function getWebContext(query) {
         );
     } catch (error) {
         console.error("Error getting web context:", error);
+        // @ts-ignore
         return `Error retrieving web information: ${error.message}`;
     }
 }
 
 // Main function to get Gemini response with web search augmentation
-export default async function getGeminiResponseWithWebSearch(prompt) {
+export default async function getGeminiResponseWithWebSearch(prompt: string) {
     try {
         // Get web context
         const webContext = await getWebContext(prompt);
@@ -243,6 +249,7 @@ ${webContext}
 Provide a concise but comprehensive summary of the information found. Include important facts, key points, and cite sources when appropriate.
 `;
 
+        // @ts-ignore
         const summaryResult = await flashModel.generateContent({
             contents: [{ parts: [{ text: summarizationPrompt }] }],
         });
@@ -276,6 +283,7 @@ Your response should be in JSON format with the following structure only:
   "explanation": "Your explanation here"
 }`;
 
+        // @ts-ignore
         const ratingResult = await proModel.generateContent({
             contents: [{ parts: [{ text: ratingPrompt }] }],
             generationConfig: {
@@ -293,6 +301,7 @@ Your response should be in JSON format with the following structure only:
             console.error("Error parsing rating JSON response:", jsonError);
             ratingData = {
                 rating: "N/A",
+                // @ts-ignore
                 explanation: `Error parsing rating response: ${jsonError.message}`,
             };
         }
@@ -309,6 +318,7 @@ Your response should be in JSON format with the following structure only:
         return {
             summary: "Error generating response",
             rating: "N/A",
+            // @ts-ignore
             explanation: `Error: ${error.message}`,
             sources: [],
         };
@@ -340,14 +350,3 @@ function _manageMemoryCaches() {
         keysToDelete.forEach((key) => pageCache.delete(key));
     }
 }
-
-// Usage example
-async function main() {
-    const response = await getGeminiResponseWithWebSearch(
-        "What is the latest news about AI regulation?"
-    );
-    console.log(response);
-}
-
-// Uncomment to run the example
-// main();
