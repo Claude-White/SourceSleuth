@@ -240,17 +240,17 @@ function IndexPopup() {
 
   function renderInputView() {
     return (
-      <div className="flex flex-col gap-4">
-        <div className="bg-[#30343c] rounded-xl p-4 shadow-inner">
-          <h2 className="mb-2 text-lg font-semibold text-blue-200">{title}</h2>
+      <div className="flex flex-col justify-between">
+        <div className="rounded-xl shadow-inner flex flex-col justify-between">
+          <h2 className="text-lg font-semibold text-blue-200">{title}</h2>
           {status === Status.COMPLETED && response ? (
             renderResultView()
           ) : highlightedText ? (
-            <p className="h-24 overflow-hidden text-base italic text-gray-300 line-clamp-3 bg-[#23272f] rounded p-2">
+            <p className="h-24 overflow-hidden text-base italic text-gray-300 line-clamp-3 rounded">
               {`"${highlightedText}"`}
             </p>
           ) : (
-            <p className="h-28 overflow-hidden text-base text-gray-400 line-clamp-3 bg-[#23272f] rounded p-2 overflow-y-scroll">
+            <p className="h-28 overflow-hidden text-base text-gray-400 line-clamp-3 rounded overflow-y-scroll">
               Simply highlight any text on a website you suspect of being false,
               inaccurate or biased, and click the button below to determine the
               legitimacy.
@@ -389,7 +389,7 @@ function IndexPopup() {
     );
   } else {
     return (
-      <div className="bg-[#474747] p-4 h-72 w-96 flex flex-col justify-between">
+      <div className="h-72 w-96 flex flex-col justify-between">
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-2">
             <img src={myIcon} className="w-8" alt="My Icon" />

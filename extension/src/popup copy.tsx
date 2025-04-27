@@ -346,7 +346,7 @@ function IndexPopup() {
   ) {
     return (
       <div
-        className={`bg-[#474747] p-4 h-auto min-h-72 w-96 flex flex-col ${
+        className={`h-auto min-h-72 w-96 flex flex-col ${
           viewMode === "input" ? "justify-between" : "justify-start"
         }`}
       >
@@ -363,7 +363,7 @@ function IndexPopup() {
     );
   } else {
     return (
-      <div className="bg-[#474747] p-4 h-auto min-h-72 w-96 flex flex-col justify-between">
+      <div className="h-auto min-h-72 w-96 flex flex-col justify-between">
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-end gap-1">
             <img src={myIcon} className="w-8" alt="My Icon" />
