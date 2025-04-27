@@ -199,7 +199,7 @@ function IndexPopup() {
     }
 
     fetchUser()
-  }, [])
+  }, [viewMode])
 
   function renderHistory() {
     if (loading) return <div>Loading...</div>
